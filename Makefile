@@ -76,7 +76,7 @@ NET_LIB = $(NET_LIB_PATH)/lib$(NET_LIB_NAME).a
 
 ifeq ($(HAVE_SELINUX),1)
 SE_PC_CFLAGS := $(shell $(PKG_CONFIG) --cflags libselinux)
-SE_PC_LIBS := $(shell $(PKG_CONFIG) --libs libselinux || echo -lselinux)
+SE_PC_LIBS := $(shell $(PKG_CONFIG) --libs libselinux || echo -lselinux) -lpthread
 SELIB = $(SE_PC_LIBS)
 CPPFLAGS += $(SE_PC_CFLAGS)
 endif
@@ -91,7 +91,11 @@ NLIB	= -l$(NET_LIB_NAME)
 %.o:		%.c config.h version.h intl.h lib/net-features.h $<
 		$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
 
-all:		config.h version.h subdirs $(PROGS)
+all:		touchconfig config.h version.h subdirs $(PROGS)
+
+touchconfig:
+		if [ -e config.h ];then touch config.h;fi
+		if [ -e config.status ];then touch config.status;fi
 
 config: 	cleanconfig config.h
 
@@ -111,7 +115,7 @@ cleanconfig:
 		rm -f config.h
 
 clobber: 	clean
-		rm -f $(PROGS) config.h version.h config.status config.make
+#		rm -f $(PROGS) config.h version.h config.status config.make
 		@for i in $(SUBDIRS); do (cd $$i && $(MAKE) clobber) ; done
 
 
